@@ -41,4 +41,6 @@ def add_conversation(movie_id: int, conversation: ConversationJson):
     # TODO: Remove the following two lines. This is just a placeholder to show
     # how you could implement persistent storage.
 
-    return
+    print(conversation)
+    db.logs.append({"post_call_time": datetime.now(), "movie_id_added_to": movie_id})
+    db.upload_new_log()
