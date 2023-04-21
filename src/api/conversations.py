@@ -41,6 +41,47 @@ def add_conversation(movie_id: int, conversation: ConversationJson):
     # TODO: Remove the following two lines. This is just a placeholder to show
     # how you could implement persistent storage.
 
-    print(conversation)
-    db.logs.append({"post_call_time": datetime.now(), "movie_id_added_to": movie_id})
-    db.upload_new_log()
+        # Check that the characters are part of the movie
+    db.execute(
+        """
+        SELECT * FROM characters
+        WHERE movie_id = %s
+        AND id IN (%s, %s)
+        """,
+        (movie_id, conversation.character_1_id, conversation.character_2_id),
+    )
+    if db.cursor.rowcount != 2:
+        return {"error": "Characters are not part of the movie"}
+
+    # Check that the characters are not the same
+    if conversation.character_1_id == conversation.character_2_id:
+        return {"error": "Characters cannot be the same"}
+
+    # Check that the lines match the characters
+    for line in conversation.lines:
+        if line.character_id not in (conversation.character_1_id, conversation.character_2_id):
+            return {"error": "Line does not match characters"}
+
+    # Create the conversation
+    db.execute(
+        """
+        INSERT INTO conversations (movie_id, character_1_id, character_2_id)
+        VALUES (%s, %s, %s)
+        """,
+        (movie_id, conversation.character_1_id, conversation.character_2_id),
+    )
+    conversation_id = db.cursor.lastrowid
+
+    # Create the lines
+    for line in conversation.lines:
+        db.execute(
+            """
+            INSERT INTO lines (conversation_id, character_id, line_text, sort)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (conversation_id, line.character_id, line.line_text, line.sort),
+        )
+
+    return {"conversation_id": conversation_id}
+ 
+
