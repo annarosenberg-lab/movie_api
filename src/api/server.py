@@ -25,6 +25,10 @@ tags_metadata = [
         "name": "movies",
         "description": "Access information on top-rated movies.",
     },
+        {
+        "name": "lines",
+        "description": "Access information on lines in top-rated movies.",
+    }
 ]
 
 app = FastAPI(
@@ -32,14 +36,16 @@ app = FastAPI(
     description=description,
     version="0.0.1",
     contact={
-        "name": "Lucas Pierce",
-        "email": "lupierce@calpoly.edu",
+        "name": "Anna Rosenberg",
+        "email": "arosen12@calpoly.edu",
     },
     openapi_tags=tags_metadata,
 )
 app.include_router(characters.router)
 app.include_router(movies.router)
+app.include_router(lines.router)
 app.include_router(pkg_util.router)
+
 app.include_router(conversations.router)
 
 
