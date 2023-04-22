@@ -10,6 +10,9 @@ jobs:
       matrix:
         python-version: ["3.9"]
     environment: PYTEST
+    env:
+      SUPABASE_API_KEY: ${{ secrets.SUPABASE_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
