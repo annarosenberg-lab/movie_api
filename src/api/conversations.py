@@ -43,32 +43,6 @@ def add_conversation(movie_id: int, conversation: ConversationJson):
 
         # Check that the characters are part of the movie
 
-    try:
-        movie = db.movies[movie_id]
-        character_1 = db.characters[conversation.character_1_id]
-        character_2 = db.characters[conversation.character_2_id]
-    except KeyError:
-        raise HTTPException(status_code=404, detail="movie or character not found.")
-    
-    if (character_1.movie_id != movie_id or character_2.movie_id != movie_id) or (character_1.id == character_2.id):
-        raise HTTPException(status_code=404, detail="invalid characters.")
-    
-    for line in conversation.lines:
-        if line.character_id != character_1.id and line.character_id != character_2.id:
-            raise HTTPException(status_code=404, detail="invalid lines.")
-        
-    conversation_id = max(d['conversation_id'] for d in db.conversations.values()) + 1
-    line_sort = 1
-    for line in conversation.lines:
-        line_id = max(d['line_id'] for d in db.lines.values()) + 1
-        #db.lines[line_id] = db.Line(line_id, line.character_id, movie_id, conversation_id, line_sort, line.line_text)
-        db.lines.append({"line_id": line_id, "character_id": line.character_id, "movie_id": movie_id, "conversation_id": conversation_id, "line_sort": line_sort, "line_text": line.line_text})
-        db.upload_new_line()
-        line_sort += 1
-
-    #db.conversations[conversation_id] = db.Conversation(conversation_id, character_1.id, character_2.id, movie_id, len(conversation.lines))
-    db.conversations.append({"conversation_id": conversation_id, "character1_id": character_1.id, "character2_id": character_2.id, "movie_id": movie_id})
-    db.upload_new_conversation()
-
-    return {"conversation_id": conversation_id}
+    db.logs.append({"post_call_time": datetime.now(), "movie_id_added_to": movie_id})
+    db.upload_new_log()
 
