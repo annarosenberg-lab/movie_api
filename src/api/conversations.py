@@ -37,6 +37,24 @@ def add_conversation(movie_id: int, conversation: ConversationJson):
 
     The endpoint returns the id of the resulting conversation that was created.
     """
+    
+    """
+        Function limitations:
+        - Does not check if the conversation is actually apart of the movie, 
+        users have discretion to add whatever lines they want to whatever movie they want.
+        - This function is difficult to test because the test functions with valid input modify
+        the database each time they are called and the database is not reset after each test.
+        - This function is slow and not very efficient, it iterates through the entire database to
+        find the max id.
+        - This function is not very secure, it does not check if the user is authorized
+        to add a conversation/line.
+        - This function is not very scalable, it does not check if the conversation/line
+        already exists, and duplicate conversations/lines may be added to the database.
+        - This would no function well in the case of multiple simultaneous requests, 
+        the database could be modified in an unexpected way.
+        - Race conditions may occur if multiple users are trying to add a conversation/line 
+        at the same time.
+    """
 
   
     try:
