@@ -66,3 +66,19 @@ def test_add_conversation_4():
     }
     response = client.post("/movies/888888/conversations/", json=test)
     assert response.status_code == 404
+    
+    
+#Testing with valid inputs    
+def test_add_conversation_5():
+    test = {
+        "character_1_id": 0,
+        "character_2_id": 1,
+        "lines": [
+            {
+                "character_id": 1,
+                "line_text": "test passed for test_add_conversation_5"
+            }
+        ]
+    }
+    response = client.post("/movies/0/conversations/", json=test)
+    assert response.status_code == 200
