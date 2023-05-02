@@ -226,7 +226,7 @@ def list_characters(
                 "character_id": row.character_id,
                 "character": row.name,
                 "movie": row.title,
-                "number_of_lines": get_num_lines_character(row.character_id),
+                "number_of_lines": row.number_of_lines,
             }
             for row in result
         ]
