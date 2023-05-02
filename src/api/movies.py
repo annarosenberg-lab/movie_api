@@ -7,7 +7,17 @@ from fastapi.params import Query
 
 router = APIRouter()
 
-
+def get_num_lines(character_id:int):
+    "returns the number of lines a character has"
+    stmt = sqlalchemy.select(
+        sqlalchemy.func.count(db.lines.c.line_id)
+    ).where(
+        db.lines.c.character_id == character_id
+    )
+    with db.engine.connect() as conn:
+        result = conn.execute(stmt)
+        return result.scalar()
+    
 @router.get("/movies/{movie_id}", tags=["movies"])
 def get_movie(movie_id: int):
     """
@@ -23,25 +33,41 @@ def get_movie(movie_id: int):
     * `character`: The name of the character.
     * `num_lines`: The number of lines the character has in the movie.
 
+    
     """
+    stmt = sqlalchemy.select(
+        db.movies.c.movie_id,
+        db.movies.c.title,
+        db.characters.c.character_id,
+        db.characters.c.name,
+    ).select_from(
+        db.movies.join(
+            db.characters, db.movies.c.movie_id == db.characters.c.movie_id
+        )
+    ).where(db.movies.c.movie_id == movie_id)
 
-    movie = db.movies.get(movie_id)
-    if movie:
-        top_chars = [
-            {"character_id": c.id, "character": c.name, "num_lines": c.num_lines}
-            for c in db.characters.values()
-            if c.movie_id == movie_id
-        ]
-        top_chars.sort(key=lambda c: c["num_lines"], reverse=True)
+    with db.engine.connect() as conn:
+        result = conn.execute(stmt)
+        if result.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Movie not found")
+        json = {}
+        for row in result:
+            json["movie_id"] = row.movie_id
+            json["title"] = row.title
+            json.setdefault("top_characters", [])
+            json["top_characters"].append(
+                {
+                    "character_id": row.character_id,
+                    "character": row.name,
+                    "num_lines": get_num_lines(row.character_id),
+                }
+            )
+        json["top_characters"] = sorted(
+            json["top_characters"], key=lambda x: x["num_lines"], reverse=True
+        )[:5]
+        return json
+  
 
-        result = {
-            "movie_id": movie_id,
-            "title": movie.title,
-            "top_characters": top_chars[0:5],
-        }
-        return result
-
-    raise HTTPException(status_code=404, detail="movie not found.")
 
 
 class movie_sort_options(str, Enum):
