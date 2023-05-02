@@ -127,7 +127,9 @@ def get_character(id: int):
     )
 
     with db.engine.connect() as conn:
-        result = conn.execute(stmt).fetchone()
+        result = conn.execute(stmt)
+        if result.rowcount == 0:
+            raise HTTPException(status_code=404, detail="character not found")
         json = {
             "character_id": result.character_id,
             "character": result.name,
